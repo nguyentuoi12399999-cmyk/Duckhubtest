@@ -1,223 +1,4 @@
--- REDZ UI + NUT VUONG + FULL BANANAHUB 31K DONG - KHONG AN BOT
--- Giu nguyen 100% chuc nang tu file BananaHub cua ban
--- Doi UI sang tlredz V5 + Nut vuong
-
-repeat task.wait() until game:IsLoaded()
-print("[REDZ FULL BANANAHUB] Loading...")
-
-local Players = game:GetService("Players")
-local LP = Players.LocalPlayer
-repeat task.wait() until LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
-repeat task.wait() until LP:FindFirstChild("PlayerGui")
-
--- ===== LOAD TLREDZ V5 TU LINK BAN GUI =====
-local RedzLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/V5/Source.lua"))()
-print("[REDZ] tlredz V5 loaded!")
-
--- ===== WRAPPER LIB - TUONG THICH VOI BANANA UI CU NHUNG DUNG REDZ UI =====
--- Banana UI cu: lib:CreateWindow({Title, Subtitle}) -> t15.Info = window:AddTab("Info") -> group = tab:AddLeftGroupbox("Name") -> group:AddToggle, AddButton...
--- Redz UI moi: RedzLib:MakeWindow({Title, SubTitle}) -> tab = Window:MakeTab({name}) -> tab:AddToggle, AddButton...
-
-local Window = RedzLib:MakeWindow({
-    Title = "Duck Hub",
-    SubTitle = "by DUCZ",
-    SaveFolder = "DuckHubRedzFullBanana"
-})
-
--- Tao tat ca tab nhu Banana UI cu
-local t15 = {}
-t15.Info = Window:MakeTab({"Info And Status", "info"})
-t15.Main = Window:MakeTab({"Farming", "sword"})
-t15.Settings = Window:MakeTab({"Setting", "settings"})
-t15.Fish = Window:MakeTab({"Fishing", "anchor"})
-t15.Quests = Window:MakeTab({"Quest And Item", "scroll"})
-t15.SeaEvent = Window:MakeTab({"Sea Event", "waves"})
-t15.Race = Window:MakeTab({"Mirage And Race", "zap"})
-t15.Prehistoric = Window:MakeTab({"Volcano Event", "flame"})
-t15.Esp = Window:MakeTab({"Stats And Esp", "eye"})
-t15.Raids = Window:MakeTab({"Fruit And Raid", "apple"})
-t15.Combat = Window:MakeTab({"Local Player", "user"})
-t15.Travel = Window:MakeTab({"Teleport", "map"})
-t15.Shop = Window:MakeTab({"Shopping", "shopping-cart"})
-t15.Misc = Window:MakeTab({"Miscellaneous", "box"})
-
--- FIX TAB LOI K LEN UI - WRAPPER CHUAN CHO REDZLIB V5 - BAO LEN UI 100%
-local function createGroupWrapper(tab, name)
-    local group = {}
-    group._tab = tab
-    group._name = name
-    
-    -- FIX: Tao section - RedzLib V5 AddSection can nhan string, khong phai table
-    pcall(function()
-        tab:AddSection(name)
-    end)
-    pcall(function()
-        tab:AddSection({name})
-    end)
-    
-    function group:AddLabel(text)
-        local ok = pcall(function()
-            tab:AddParagraph({text, ""})
-        end)
-        if not ok then
-            pcall(function() tab:AddLabel(text) end)
-        end
-        return {SetText = function() end}
-    end
-    
-    function group:AddToggle(id, data)
-        local text = data.Text or id or "Toggle"
-        local default = data.Default
-        if default == nil then default = false end
-        local callback = data.Callback or function() end
-        
-        -- FIX: RedzLib V5 co 2 cach AddToggle - Thu ca 2 de bao len
-        local toggle = nil
-        local ok1 = pcall(function()
-            toggle = tab:AddToggle({text, default, callback})
-        end)
-        if not ok1 or not toggle then
-            pcall(function()
-                toggle = tab:AddToggle(text, default, callback)
-            end)
-        end
-        if not toggle then
-            pcall(function()
-                toggle = tab:AddToggle({Name=text, Default=default, Callback=callback})
-            end)
-        end
-        return toggle or {SetValue=function() end}
-    end
-    
-    function group:AddButton(data)
-        local text = data.Text or "Button"
-        local func = data.Func or function() end
-        local btn = nil
-        pcall(function() btn = tab:AddButton({text, func}) end)
-        if not btn then
-            pcall(function() btn = tab:AddButton(text, func) end)
-        end
-        return btn or {SetText=function() end}
-    end
-    
-    function group:AddDropdown(id, data)
-        local text = data.Text or id or "Dropdown"
-        local values = data.Values or {"Option1"}
-        local default = data.Default or 1
-        local callback = data.Callback or function() end
-        local defaultValue = values[default] or values[1]
-        local drop = nil
-        pcall(function() drop = tab:AddDropdown({text, values, defaultValue, false, callback}) end)
-        if not drop then
-            pcall(function() drop = tab:AddDropdown(text, values, defaultValue, callback) end)
-        end
-        return drop or {SetValue=function() end}
-    end
-    
-    function group:AddSlider(id, data)
-        local text = data.Text or id or "Slider"
-        local min = data.Min or 0
-        local max = data.Max or 100
-        local default = data.Default or min
-        local callback = data.Callback or function() end
-        local slider = nil
-        pcall(function() slider = tab:AddSlider({text, min, max, default, callback}) end)
-        if not slider then
-            pcall(function() slider = tab:AddSlider(text, min, max, default, callback) end)
-        end
-        return slider or {SetValue=function() end}
-    end
-    
-    return group
-end
-
--- Monkey patch t15 tabs de co AddLeftGroupbox / AddRightGroupbox
-for _, tab in pairs(t15) do
-    tab.AddLeftGroupbox = function(self, name)
-        return createGroupWrapper(self, name)
-    end
-    tab.AddRightGroupbox = function(self, name)
-        return createGroupWrapper(self, name)
-    end
-    -- Banana UI con co AddGroupbox
-    tab.AddGroupbox = function(self, name)
-        return createGroupWrapper(self, name)
-    end
-end
-
--- Lib wrapper
-local lib = {}
-function lib:CreateWindow(data)
-    return Window
-end
-
-function lib.ToggleUI() pcall(function() Window:Visible(not hubVisible) end)
-    -- Se duoc goi trong file goc, minh xu ly sau
-    print("[REDZ] ToggleUI called")
-end
-
--- ===== NUT BUTTON HINH VUONG - KIEU REDZ HUB - GOC TRAI GIUA =====
-local MainGui = Instance.new("ScreenGui")
-MainGui.Name = "RedzSquareToggleFull"
-MainGui.Parent = LP.PlayerGui
-MainGui.ResetOnSpawn = false
-MainGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-MainGui.DisplayOrder = 9999
-
-local SquareButton = Instance.new("ImageButton")
-SquareButton.Name = "SquareButton"
-SquareButton.Parent = MainGui
-SquareButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-SquareButton.BorderSizePixel = 0
-SquareButton.Position = UDim2.new(0, 15, 0.5, -120)
-SquareButton.Size = UDim2.new(0, 62, 0, 62)
-SquareButton.Image = "rbxassetid://6023426923"
-SquareButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
-SquareButton.Draggable = true
-SquareButton.Active = true
-SquareButton.ZIndex = 10000
-Instance.new("UICorner", SquareButton).CornerRadius = UDim.new(0, 14)
-
-local StrokeSquare = Instance.new("UIStroke")
-StrokeSquare.Color = Color3.fromRGB(255, 0, 80)
-StrokeSquare.Thickness = 2.5
-StrokeSquare.Parent = SquareButton
-
-local IconLabel = Instance.new("TextLabel")
-IconLabel.Parent = SquareButton
-IconLabel.BackgroundTransparency = 1
-IconLabel.Size = UDim2.new(1, 0, 1, 0)
-IconLabel.Font = Enum.Font.GothamBlack
-IconLabel.Text = "R"
-IconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-IconLabel.TextSize = 34
-IconLabel.ZIndex = 10001
-
-local hubVisible = true
-SquareButton.MouseButton1Click:Connect(function()
-    hubVisible = not hubVisible
-    Window:Visible(hubVisible)
-    if hubVisible then
-        IconLabel.Text = "R"
-        StrokeSquare.Color = Color3.fromRGB(255, 0, 80)
-        SquareButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    else
-        IconLabel.Text = "R"
-        StrokeSquare.Color = Color3.fromRGB(0, 200, 80)
-        SquareButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    end
-end)
-
-print("[REDZ] Nut vuong + Wrapper da tao xong! Dang load full BananaHub 31k dong...")
-
--- ===== LOAD FULL CODE BANANAHUB CUA BAN - GIU NGUYEN 100% =====
--- Code duoi day la toan bo file BananaHub_FINAL_ALL_FIX_INCLUDING_RAID.lua cua ban
--- Chi thay lib = ... thanh lib wrapper ben tren, giu nguyen tat ca chuc nang
-
-
-
--- ===== CODE GOC TU FILE BAN GUI - GIU NGUYEN 100% - KHONG AN BOT =====
-﻿local function geniter(f, s, c)
+local function geniter(f, s, c)
 	if type(f) ~= "function" then
 		local mt = getmetatable(f)
 
@@ -307,6 +88,676 @@ spawn(function()
     local LocalPlayer = Players.LocalPlayer
     local function GetClosest()
         local closest, shortest = nil, _G.AimbotFOV_Fix
+        local mousePos = UserInputService:GetMouseLocation()
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
+                if _G.AimbotTeamCheck_Fix and plr.Team == LocalPlayer.Team then continue end
+                local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
+                if onScreen then
+                    local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                    if dist < shortest then shortest = dist closest = plr end
+                end
+            end
+        end
+        return closest
+    end
+    RunService.RenderStepped:Connect(function()
+        if not _G.AimbotEnabled_Fix then return end
+        local target = GetClosest()
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            local cam = workspace.CurrentCamera
+            local hrp = target.Character.HumanoidRootPart
+            local predicted = hrp.Position + hrp.Velocity * 0.12
+            cam.CFrame = cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position, predicted), 0.5)
+        end
+    end)
+    RunService.Heartbeat:Connect(function()
+        if not _G.HitboxEnabled_Fix then return end
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                if _G.AimbotTeamCheck_Fix and plr.Team == LocalPlayer.Team then continue end
+                pcall(function()
+                    plr.Character.HumanoidRootPart.Size = Vector3.new(_G.HitboxSize_Fix, _G.HitboxSize_Fix, _G.HitboxSize_Fix)
+                    plr.Character.HumanoidRootPart.Transparency = 0.6
+                    plr.Character.HumanoidRootPart.CanCollide = false
+                end)
+            end
+        end
+    end)
+end)
+
+-- CLEAN OLD SEPARATE UI
+pcall(function()
+    local guiParent = gethui and gethui() or game.CoreGui
+    for _, name in ipairs({"DUCK_FIX_GUI","DUCK_FULL_FIX","DUCK_FIX"}) do
+        local g = guiParent:FindFirstChild(name)
+        if g then g:Destroy() end
+    end
+    for _, child in ipairs(guiParent:GetChildren()) do
+        if child:IsA("ScreenGui") then
+            for _, desc in ipairs(child:GetDescendants()) do
+                if desc:IsA("TextLabel") and desc.Text:find("DUCK FIX") then
+                    child:Destroy()
+                    break
+                end
+            end
+        end
+    end
+end)
+
+
+World1 = game.PlaceId == 2753915549 or game.PlaceId == 85211729168715
+World2 = game.PlaceId == 4442272183 or game.PlaceId == 79091703265657
+World3 = game.PlaceId == 7449423635 or game.PlaceId == 100117331123089
+
+do
+	Marines = function()
+		replicated.Remotes.CommF_:InvokeServer("SetTeam", "Marines")
+	end
+end
+
+do
+	Pirates = function()
+		replicated.Remotes.CommF_:InvokeServer("SetTeam", "Pirates")
+	end
+end
+
+if World1 then
+	BossList = {
+		"The Gorilla King",
+		"Bobby",
+		"The Saw",
+		"Yeti",
+		"Mob Leader",
+		"Vice Admiral",
+		"Saber Expert",
+		"Warden",
+		"Chief Warden",
+		"Swan",
+		"Magma Admiral",
+		"Fishman Lord",
+		"Wysper",
+		"Thunder God",
+		"Cyborg",
+		"Ice Admiral",
+		"Greybeard"
+	}
+elseif World2 then
+	BossList = {
+		"Diamond",
+		"Jeremy",
+		"Orbitus",
+		"Don Swan",
+		"Smoke Admiral",
+		"Awakened Ice Admiral",
+		"Tide Keeper",
+		"Darkbeard",
+		"Cursed Captain",
+		"Order"
+	}
+elseif World3 then
+	BossList = {
+		"Stone",
+		"Hydra Leader",
+		"Kilo Admiral",
+		"Captain Elephant",
+		"Beautiful Pirate",
+		"Cake Queen",
+		"Dough King",
+		"Longma",
+		"Soul Reaper",
+		"rip_indra True Form",
+		"Tyrant of the Skies"
+	}
+end
+
+if World1 then
+	MaterialList = {
+		"Leather + Scrap Metal",
+		"Angel Wings",
+		"Magma Ore",
+		"Fish Tail"
+	}
+elseif World2 then
+	MaterialList = {
+		"Leather + Scrap Metal",
+		"Radioactive Material",
+		"Ectoplasm",
+		"Mystic Droplet",
+		"Magma Ore",
+		"Vampire Fang"
+	}
+elseif World3 then
+	MaterialList = {
+		"Scrap Metal",
+		"Demonic Wisp",
+		"Conjured Cocoa",
+		"Dragon Scale",
+		"Gunpowder",
+		"Fish Tail",
+		"Mini Tusk"
+	}
+end
+
+local t1 = {
+	"Snow Lurker",
+	"Arctic Warrior",
+	"Hidden Key",
+	"Awakened Ice Admiral"
+}
+local t2 = {
+	"Part",
+	"SpawnLocation",
+	"Terrain",
+	"WedgePart",
+	"MeshPart"
+}
+local t3 = {
+	"Swan Pirate",
+	"Jeremy"
+}
+local t4 = {
+	"Fajita",
+	"Jeremy",
+	"Diamond"
+}
+local t5 = { "Cookie Crafter" }
+local t6 = { "Reborn Skeleton" }
+local t7 = {
+	["Pirate Millionaire"] = CFrame.new(-712.8272705078125, 98.577049255371094, 5711.9541015625),
+	["Pistol Billionaire"] = CFrame.new(-723.43316650390625, 147.42906188964844, 5931.9931640625),
+	["Dragon Crew Warrior"] = CFrame.new(7021.50439453125, 55.762702941894531, -730.12908935546875),
+	["Dragon Crew Archer"] = CFrame.new(6625, 378, 244),
+	["Female Islander"] = CFrame.new(4692.7939453125, 797.9766845703125, 858.8480224609375),
+	["Venomous Assailant"] = CFrame.new(4902, 670, 39),
+	["Marine Commodore"] = CFrame.new(2401, 123, -7589),
+	["Marine Rear Admiral"] = CFrame.new(3588, 229, -7085),
+	["Fishman Raider"] = CFrame.new(-10941, 332, -8760),
+	["Fishman Captain"] = CFrame.new(-11035, 332, -9087),
+	["Forest Pirate"] = CFrame.new(-13446, 413, -7760),
+	["Mythological Pirate"] = CFrame.new(-13510, 584, -6987),
+	["Jungle Pirate"] = CFrame.new(-11778, 426, -10592),
+	["Musketeer Pirate"] = CFrame.new(-13282, 496, -9565),
+	["Reborn Skeleton"] = CFrame.new(-8764, 142, 5963),
+	["Living Zombie"] = CFrame.new(-10227, 421, 6161),
+	["Demonic Soul"] = CFrame.new(-9579, 6, 6194),
+	["Posessed Mummy"] = CFrame.new(-9579, 6, 6194),
+	["Peanut Scout"] = CFrame.new(-1993, 187, -10103),
+	["Peanut President"] = CFrame.new(-2215, 159, -10474),
+	["Ice Cream Chef"] = CFrame.new(-877, 118, -11032),
+	["Ice Cream Commander"] = CFrame.new(-877, 118, -11032),
+	["Cookie Crafter"] = CFrame.new(-2021, 38, -12028),
+	["Cake Guard"] = CFrame.new(-2024, 38, -12026),
+	["Baking Staff"] = CFrame.new(-1932, 38, -12848),
+	["Head Baker"] = CFrame.new(-1932, 38, -12848),
+	["Cocoa Warrior"] = CFrame.new(95, 73, -12309),
+	["Chocolate Bar Battler"] = CFrame.new(647, 42, -12401),
+	["Sweet Thief"] = CFrame.new(116, 36, -12478),
+	["Candy Rebel"] = CFrame.new(47, 61, -12889),
+	Ghost = CFrame.new(5251, 5, 1111)
+}
+local t8 = {
+	RFJobsRemoteFunction = replicated.Modules.Net["RF/JobsRemoteFunction"],
+	RFCraft = replicated:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RF/Craft")
+}
+
+EquipWeapon = function(p1)
+	if not p1 then
+		return
+	end
+
+	if plr.Backpack:FindFirstChild(p1) then
+		plr.Character.Humanoid:EquipTool(plr.Backpack:FindFirstChild(p1))
+	end
+end
+weaponSc = function(p2)
+	for _, child in pairs(plr.Backpack:GetChildren()) do
+		if child:IsA("Tool") and child.ToolTip == p2 then
+			EquipWeapon(child.Name)
+		end
+	end
+end
+
+local t9 = {}
+
+t9.__index = t9
+
+do
+	t9.Alive = function(p3)
+		if not p3 then
+			return
+		end
+
+		local Humanoid = p3:FindFirstChild("Humanoid")
+
+		return Humanoid and Humanoid.Health > 0
+	end
+end
+
+t9.Pos = function(p4, p5)
+	return (Root.Position - mode.Position).Magnitude <= p5
+end
+t9.Dist = function(p6, p7)
+	return (Root.Position - p6:FindFirstChild("HumanoidRootPart").Position).Magnitude <= p7
+end
+t9.DistH = function(p8, p9)
+	return (Root.Position - p8:FindFirstChild("HumanoidRootPart").Position).Magnitude > p9
+end
+
+do
+	t9.Kill = function(p10, p11)
+		if p10 and p11 then
+			if not p10:GetAttribute("Locked") then
+				p10:SetAttribute("Locked", p10.HumanoidRootPart.CFrame)
+			end
+
+			PosMon = p10:GetAttribute("Locked").Position
+			BringEnemy()
+			EquipWeapon(_G.SelectWeapon)
+
+			local Tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+
+			if (Tool and Tool:FindFirstChild("ToolTip") and Tool.ToolTip or "") == "Blox Fruit" then
+				_tp(p10.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0) * CFrame.Angles(0, math.rad(90), 0))
+			else
+				_tp(p10.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0) * CFrame.Angles(0, math.rad(180), 0))
+			end
+
+			if RandomCFrame then
+				wait(0.5)
+				_tp(p10.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25))
+				wait(0.5)
+				_tp(p10.HumanoidRootPart.CFrame * CFrame.new(25, 30, 0))
+				wait(0.5)
+				_tp(p10.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))
+				wait(0.5)
+				_tp(p10.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25))
+				wait(0.5)
+				_tp(p10.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))
+			end
+		end
+	end
+end
+
+t9.Kill2 = function(p12, p13)
+	if p12 and p13 then
+		if not p12:GetAttribute("Locked") then
+			p12:SetAttribute("Locked", p12.HumanoidRootPart.CFrame)
+		end
+
+		PosMon = p12:GetAttribute("Locked").Position
+		BringEnemy()
+		EquipWeapon(_G.SelectWeapon)
+
+		local Tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+		local ToolTip = Tool and Tool:FindFirstChild("ToolTip") and Tool.ToolTip
+
+		if (ToolTip or "") == "Blox Fruit" then
+			_tp(p12.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0) * CFrame.Angles(0, math.rad(90), 0))
+		else
+			_tp(p12.HumanoidRootPart.CFrame * CFrame.new(0, 10, 8) * CFrame.Angles(0, math.rad(180), 0))
+		end
+
+		if RandomCFrame then
+			wait(0.1)
+			_tp(p12.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25))
+			wait(0.1)
+			_tp(p12.HumanoidRootPart.CFrame * CFrame.new(25, 30, 0))
+			wait(0.1)
+			_tp(p12.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))
+			wait(0.1)
+			_tp(p12.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25))
+			wait(0.1)
+			_tp(p12.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))
+		end
+	end
+end
+
+do
+	t9.KillSea = function(p14, p15)
+		if p14 and p15 then
+			if not p14:GetAttribute("Locked") then
+				p14:SetAttribute("Locked", p14.HumanoidRootPart.CFrame)
+			end
+
+			PosMon = p14:GetAttribute("Locked").Position
+			BringEnemy()
+			EquipWeapon(_G.SelectWeapon)
+
+			local Tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+
+			if (Tool and Tool:FindFirstChild("ToolTip") and Tool.ToolTip or "") == "Blox Fruit" then
+				_tp(p14.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0) * CFrame.Angles(0, math.rad(90), 0))
+			else
+				notween(p14.HumanoidRootPart.CFrame * CFrame.new(0, 50, 8))
+				wait(0.85)
+				notween(p14.HumanoidRootPart.CFrame * CFrame.new(0, 400, 0))
+				wait(1)
+			end
+		end
+	end
+end
+
+do
+	t9.Sword = function(p16, p17)
+		if p16 then
+			if p17 then
+				if not p16:GetAttribute("Locked") then
+					p16:SetAttribute("Locked", p16.HumanoidRootPart.CFrame)
+				end
+
+				PosMon = p16:GetAttribute("Locked").Position
+				BringEnemy()
+				weaponSc("Sword")
+				_tp(p16.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0))
+
+				if RandomCFrame then
+					wait(0.1)
+					_tp(p16.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25))
+					wait(0.1)
+					_tp(p16.HumanoidRootPart.CFrame * CFrame.new(25, 30, 0))
+					wait(0.1)
+					_tp(p16.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))
+					wait(0.1)
+					_tp(p16.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25))
+					wait(0.1)
+					_tp(p16.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))
+				end
+			end
+		end
+	end
+end
+
+t9.Mas = function(p18, p19)
+	if p18 and p19 then
+		if not p18:GetAttribute("Locked") then
+			p18:SetAttribute("Locked", p18.HumanoidRootPart.CFrame)
+		end
+
+		PosMon = p18:GetAttribute("Locked").Position
+		BringEnemy()
+
+		if p18.Humanoid.Health <= HealthM then
+			_tp(p18.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0))
+
+			local SelectedMasterySkills = _G.SelectedMasterySkills
+
+			if type(SelectedMasterySkills) ~= "table" then
+				SelectedMasterySkills = {
+					"Z",
+					"X",
+					"C",
+					"V",
+					"F"
+				}
+			end
+
+			for k, SelectedMasterySkill in pairs(SelectedMasterySkills) do
+				if type(k) == "number" then
+					Useskills("Blox Fruit", SelectedMasterySkill)
+				elseif type(k) == "string" and SelectedMasterySkill == true then
+					Useskills("Blox Fruit", k)
+				end
+			end
+		else
+			weaponSc("Melee")
+			_tp(p18.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0))
+		end
+	end
+end
+
+do
+	t9.Masgun = function(p20, p21)
+		if p20 and p21 then
+			if not p20:GetAttribute("Locked") then
+				p20:SetAttribute("Locked", p20.HumanoidRootPart.CFrame)
+			end
+
+			PosMon = p20:GetAttribute("Locked").Position
+			BringEnemy()
+
+			if p20.Humanoid.Health <= HealthM then
+				_tp(p20.HumanoidRootPart.CFrame * CFrame.new(0, 35, 8))
+
+				local SelectedMasterySkills = _G.SelectedMasterySkills
+
+				if type(SelectedMasterySkills) ~= "table" then
+					SelectedMasterySkills = {
+						"Z",
+						"X",
+						"C",
+						"V",
+						"F"
+					}
+				end
+
+				for k, SelectedMasterySkill in pairs(SelectedMasterySkills) do
+					if type(k) == "number" then
+						Useskills("Gun", SelectedMasterySkill)
+					elseif type(k) == "string" and SelectedMasterySkill == true then
+						Useskills("Gun", k)
+					end
+				end
+			else
+				weaponSc("Melee")
+				_tp(p20.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0))
+			end
+		end
+	end
+end
+
+statsSetings = function(p22, p23)
+	if p22 == "Melee" then
+		if plr.Data.Points.Value ~= 0 then
+			replicated.Remotes.CommF_:InvokeServer("AddPoint", "Melee", p23)
+		end
+	elseif p22 == "Defense" then
+		if plr.Data.Points.Value ~= 0 then
+			replicated.Remotes.CommF_:InvokeServer("AddPoint", "Defense", p23)
+		end
+	elseif p22 == "Sword" then
+		if plr.Data.Points.Value ~= 0 then
+			replicated.Remotes.CommF_:InvokeServer("AddPoint", "Sword", p23)
+		end
+	elseif p22 == "Gun" then
+		if plr.Data.Points.Value ~= 0 then
+			replicated.Remotes.CommF_:InvokeServer("AddPoint", "Gun", p23)
+		end
+	elseif p22 == "Devil" and plr.Data.Points.Value ~= 0 then
+		replicated.Remotes.CommF_:InvokeServer("AddPoint", "Demon Fruit", p23)
+	end
+end
+BringEnemy = function(p24)
+	if not _B then
+		return
+	end
+
+	if not p24 then
+		local HumanoidRootPart = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+
+		if not HumanoidRootPart then
+			return
+		end
+
+		local huge = math.huge
+
+		for _, child in ipairs(workspace.Enemies:GetChildren()) do
+			local Humanoid = child:FindFirstChildOfClass("Humanoid")
+			local HumanoidRootPart2 = child:FindFirstChild("HumanoidRootPart")
+
+			if Humanoid and HumanoidRootPart2 and Humanoid.Health > 0 then
+				local Magnitude = (HumanoidRootPart2.Position - HumanoidRootPart.Position).Magnitude
+
+				if Magnitude < huge then
+					huge = Magnitude
+					p24 = child
+				end
+			end
+		end
+
+		if not p24 then
+			return
+		end
+	end
+
+	local u34 = false
+
+	local function v35(p25)
+		local Humanoid = p25:FindFirstChildOfClass("Humanoid")
+		local HumanoidRootPart = p25:FindFirstChild("HumanoidRootPart")
+
+		return Humanoid and HumanoidRootPart and Humanoid.Health > 0, HumanoidRootPart, Humanoid
+	end
+	local function v38(p26)
+		if isnetworkowner then
+			return isnetworkowner(p26)
+		end
+
+		return p26.ReceiveAge == 0 and not p26.Anchored and p26.Velocity.Magnitude > 0
+	end
+
+	pcall(function()
+		if sethiddenproperty then
+			sethiddenproperty(plr, "SimulationRadius", math.huge)
+		end
+
+		local Position = p24.HumanoidRootPart.Position
+
+		for _, child in ipairs(workspace.Enemies:GetChildren()) do
+			if child ~= p24 then
+				local v42, v43, v44 = v35(child)
+
+				if v42 and child.Name == p24.Name then
+					local Magnitude = (v43.Position - Position).Magnitude
+
+					if Magnitude <= 3000 then
+						if not v43:FindFirstChild("BodyVelocity") then
+							local BodyVelocity = Instance.new("BodyVelocity")
+
+							BodyVelocity.Name = "BodyVelocity"
+							BodyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+							BodyVelocity.Velocity = Vector3.zero
+							BodyVelocity.Parent = v43
+						end
+
+						if Magnitude <= 10 then
+							u34 = true
+						end
+
+						if not u34 and v38(v43) then
+							v43.CFrame = CFrame.new(Position)
+						end
+
+						v43.CanCollide = false
+						v44.WalkSpeed = 0
+						v44.JumpPower = 0
+					end
+				end
+			end
+		end
+
+		if p24 and p24:FindFirstChild("HumanoidRootPart") then
+			p24.HumanoidRootPart.CanCollide = false
+			p24.Humanoid.WalkSpeed = 0
+			p24.Humanoid.JumpPower = 0
+		end
+	end)
+end
+
+do
+	local function v47(p27, p28)
+		local LocalPlayer = game.Players.LocalPlayer
+		local Name
+		local v50, v51, v52 = pairs(LocalPlayer.Character:GetChildren())
+		local v53 = geniter(v50, v51, v52)
+
+		while true do
+			local v54 = table.pack(v53())
+
+			if not v54[1] then
+				break
+			end
+
+			local v55 = v54[3]
+
+			if v55:IsA("Tool") and v55.ToolTip == p27 then
+				Name = v55.Name
+
+				break
+			end
+		end
+
+		if not Name then
+			local v56, v57, v58 = pairs(LocalPlayer.Backpack:GetChildren())
+
+			for _, v1 in v56, v57, v58 do
+				if v1:IsA("Tool") then
+					if v1.ToolTip == p27 then
+						Name = v1.Name
+
+						break
+					end
+				end
+			end
+		end
+
+		if Name then
+			if LocalPlayer.PlayerGui:FindFirstChild("Main") then
+				if LocalPlayer.PlayerGui.Main:FindFirstChild("Skills") then
+					local v61 = LocalPlayer.PlayerGui.Main.Skills:FindFirstChild(Name)
+
+					if v61 then
+						local v62 = v61:FindFirstChild(p28)
+
+						if not v62 then
+							return false
+						end
+
+						local Title = v62:FindFirstChild("Title")
+
+						if Title and Title:IsA("TextLabel") and Title.TextColor3.R < 0.5 then
+							return false
+						end
+
+						local Cooldown = v62:FindFirstChild("Cooldown")
+
+						if Cooldown and (Cooldown.Size.X.Scale > 0 or Cooldown.AbsoluteSize.X > 0) then
+							return false
+						end
+
+						return true
+					end
+				end
+			end
+		end
+
+		return true
+	end
+
+	Useskills = function(p29, p30)
+		if p29 == "Melee" then
+			weaponSc("Melee")
+
+			if not v47(p29, p30) then
+				return
+			end
+
+			if p30 == "Z" then
+				vim1:SendKeyEvent(true, "Z", false, game)
+				vim1:SendKeyEvent(false, "Z", false, game)
+			elseif p30 == "X" then
+				vim1:SendKeyEvent(true, "X", false, game)
+				vim1:SendKeyEvent(false, "X", false, game)
+			elseif p30 == "C" then
+				vim1:SendKeyEvent(true, "C", false, game)
+				vim1:SendKeyEvent(false, "C", false, game)
+			elseif p30 == "V" then
+				vim1:SendKeyEvent(true, "V", false, game)
+				vim1:SendKeyEvent(false, "V", false, game)
+			elseif p30 == "F" then
+				vim1:SendKeyEvent(true, "F", false, game)
+				vim1:SendKeyEvent(false, "F", false, game)
+ix
         local mousePos = UserInputService:GetMouseLocation()
         for _, plr in ipairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
